@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pickle
 import random
+import mido
 
 TIME_STEPS = 32
 FEATURES = 27
@@ -98,12 +99,18 @@ def partitionData(sourceDir, trainingDir, testDir, validationDir):
     print("----------------------------------")
 
 def midi_to_hvo_seq(midi_path) -> hvo_seq.HVO_Sequence:
+
     
     # Convert the MIDI file to a NoteSequence
     ns = midi_io.midi_file_to_note_sequence(midi_path)
 
     # Convert the NoteSequence to an HVOSequence
     hvo_sequence = io_helpers.note_sequence_to_hvo_sequence(ns, drum_mappings.ROLAND_REDUCED_MAPPING)
+
+    # TODO: Some hvo sequences have an offset of inf. This might be a bug in the hvo_sequence library or the note sequence library.
+    # For now, we'll just skip these sequences, but we should fix this bug.
+    if not is_hvo_seq_valid(hvo_sequence):
+        raise Exception(f"Invalid HVO sequence. midi path: {midi_path}")
 
     return hvo_sequence
 
@@ -123,3 +130,13 @@ def pad_hvo_timesteps(hvo_array, time_steps) -> np.ndarray:
 
     missing_timesteps = time_steps - len(hvo_array)
     return np.pad(hvo_array, ((0, missing_timesteps),(0, 0)), 'constant', constant_values=0.0)
+
+def is_hvo_seq_valid(hvo_sequence) -> bool:
+    return is_valid_array(hvo_sequence.hits) and is_valid_array(hvo_sequence.velocities) and is_valid_array(hvo_sequence.offsets)
+
+def is_valid_array(np_array) -> bool:
+    return np.any(np.isinf(np_array)) == False and np.any(np.isnan(np_array)) == False
+
+if __name__ == "__main__":
+    mid = mido.MidiFile("/Users/danielfloresg/cs/full_thesis_proj/processing/partitioned/training/32_jazz_120_beat_4-4_slice_002.mid")
+    print(mid.tracks[0])

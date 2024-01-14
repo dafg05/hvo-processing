@@ -3,6 +3,7 @@ import tools
 from hvo_sequence import hvo_seq, io_helpers
 
 TEST_DIR = "test"
+OUT_DIR = TEST_DIR + "/out"
 
 def test_pad_hvo_timesteps():
     hvo_array = np.array([[1,2], [3,4]])
@@ -15,7 +16,7 @@ def test_midi_to_hvo():
     hvo_sequence = tools.midi_to_hvo_seq(midi_path)
     
     ns = hvo_sequence.to_note_sequence()
-    io_helpers.save_note_sequence_to_midi(ns, TEST_DIR + "/hvo_full.mid")
+    io_helpers.save_note_sequence_to_midi(ns, OUT_DIR + "/hvo_full.mid")
     print("saved hvo_full.mid")    
 
 def test_hvo_to_monotonic():
@@ -27,7 +28,7 @@ def test_hvo_to_monotonic():
     monotonic_sequence.hvo = monotonic_array
 
     ns = monotonic_sequence.to_note_sequence()
-    io_helpers.save_note_sequence_to_midi(ns, TEST_DIR + "/hvo_mono.mid")
+    io_helpers.save_note_sequence_to_midi(ns, OUT_DIR + "/hvo_mono.mid")
     print("saved hvo_mono.mid")
 
 if __name__ == "__main__":

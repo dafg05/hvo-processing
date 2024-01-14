@@ -1,0 +1,3 @@
+notes_seq
+numpy
+mido

@@ -1,6 +1,5 @@
 from hvo_sequence import io_helpers, drum_mappings, hvo_seq
 from note_seq import midi_io
-from note_seq import sequences_lib
 
 import os
 import numpy as np
@@ -10,6 +9,9 @@ import mido
 
 TIME_STEPS = 32
 FEATURES = 27
+
+# Pipeline functions ----------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 def serialize_hvo_pairs(midi_dir, output_path):
     # hvo pairs consist of a monotonic groove sequence and a full-groove sequence in that order
@@ -52,7 +54,6 @@ def serialize_hvo_pairs(midi_dir, output_path):
     with open(output_path, 'wb') as file:
         pickle.dump(hvo_pairs, file)
     print(f"Serialized {len(hvo_pairs)} HVO sequences to {output_path}. {errors} errors occurred.")
-
 
 def partitionData(sourceDir, trainingDir, testDir, validationDir):
     print("----------------------------------")
@@ -98,24 +99,32 @@ def partitionData(sourceDir, trainingDir, testDir, validationDir):
     print(f"moved the rest of {remainingFiles} files from {sourceDir} to {trainingDir}")
     print("----------------------------------")
 
-def midi_to_hvo_seq(midi_path) -> hvo_seq.HVO_Sequence:
 
-    
+# Conversion functions --------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+def midi_to_hvo_seq(midi_path: str) -> hvo_seq.HVO_Sequence:
+    """
+    Converts the midi file at midi path into an HVOSequence.
+    """
     # Convert the MIDI file to a NoteSequence
     ns = midi_io.midi_file_to_note_sequence(midi_path)
 
     # Convert the NoteSequence to an HVOSequence
     hvo_sequence = io_helpers.note_sequence_to_hvo_sequence(ns, drum_mappings.ROLAND_REDUCED_MAPPING)
 
-    # TODO: Some hvo sequences have an offset of inf. This might be a bug in the hvo_sequence library or the note sequence library.
+    # TODO: In the data pipeline, some hvo sequences have an offset of inf. 
+    # This might be a bug in the hvo_sequence library or the note sequence library.
     # For now, we'll just skip these sequences, but we should fix this bug.
     if not is_hvo_seq_valid(hvo_sequence):
         raise Exception(f"Invalid HVO sequence. midi path: {midi_path}")
 
     return hvo_sequence
 
-def hvo_seq_to_array(hvo_sequence) -> np.ndarray:
-    # Convert the HVOSequence to a numpy array
+def hvo_seq_to_array(hvo_sequence: hvo_seq.HVO_Sequence) -> np.ndarray:
+    """
+    Converts an HVOSequence to a numpy array.
+    """
     hits = hvo_sequence.hits
     velocities = hvo_sequence.velocities
     offsets = hvo_sequence.offsets
@@ -123,6 +132,34 @@ def hvo_seq_to_array(hvo_sequence) -> np.ndarray:
     hvo_array = np.concatenate((hits, velocities, offsets), axis=1)
 
     return hvo_array
+
+def array_to_hvo_seq(hvo_array: np.ndarray, tempo: int=120) -> hvo_seq.HVO_Sequence:
+    """
+    Converts an hvo_array to an HVOSequence.
+    """
+    if not is_valid_hvo_array(hvo_array):
+        raise Exception(f"Invalid HVO array. hvo_array: {hvo_array.shape}")
+
+    hvo_sequence = hvo_seq.HVO_Sequence(drum_mappings.ROLAND_REDUCED_MAPPING)
+    hvo_sequence.hvo = hvo_array
+    hvo_sequence.add_tempo(time_step=0, qpm=tempo)
+
+    hvo_sequence.add_time_signature(time_step=0, numerator=4, denominator=4, beat_division_factors=[4])
+
+    return hvo_sequence
+
+def hvo_seq_to_midi(hvo_sequence: hvo_seq.HVO_Sequence, output_path: str):
+    """
+    Converts an HVOSequence to a MIDI file.
+    """
+    # Convert the HVOSequence to a NoteSequence
+    ns = hvo_sequence.to_note_sequence(9)
+    # Write the NoteSequence to a MIDI file
+    io_helpers.save_note_sequence_to_midi(ns, output_path)
+
+
+# Helper functions ------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 def pad_hvo_timesteps(hvo_array, time_steps) -> np.ndarray:
     
@@ -132,10 +169,10 @@ def pad_hvo_timesteps(hvo_array, time_steps) -> np.ndarray:
     return np.pad(hvo_array, ((0, missing_timesteps),(0, 0)), 'constant', constant_values=0.0)
 
 def is_hvo_seq_valid(hvo_sequence) -> bool:
-    return is_valid_array(hvo_sequence.hits) and is_valid_array(hvo_sequence.velocities) and is_valid_array(hvo_sequence.offsets)
+    return is_valid_hvo_array(hvo_sequence.hits) and is_valid_hvo_array(hvo_sequence.velocities) and is_valid_hvo_array(hvo_sequence.offsets)
 
-def is_valid_array(np_array) -> bool:
-    return np.any(np.isinf(np_array)) == False and np.any(np.isnan(np_array)) == False
+def is_valid_hvo_array(hvo_array) -> bool:
+    return np.any(np.isinf(hvo_array)) == False and np.any(np.isnan(hvo_array)) == False
 
 if __name__ == "__main__":
     mid = mido.MidiFile("/Users/danielfloresg/cs/full_thesis_proj/processing/partitioned/training/32_jazz_120_beat_4-4_slice_002.mid")

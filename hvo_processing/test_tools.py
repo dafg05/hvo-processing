@@ -1,6 +1,6 @@
 import numpy as np
-import tools
 import os
+from hvo_processing import tools
 from hvo_sequence import io_helpers
 
 TEST_DIR = "test"

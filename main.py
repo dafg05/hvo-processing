@@ -1,7 +1,6 @@
 import tools
 import sys
 import os
-import shutil
 
 from pathlib import Path
 

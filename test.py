@@ -1,6 +1,7 @@
 import numpy as np
 import tools
-from hvo_sequence import hvo_seq, io_helpers
+import os
+from hvo_sequence import io_helpers
 
 TEST_DIR = "test"
 OUT_DIR = TEST_DIR + "/out"
@@ -32,6 +33,11 @@ def test_hvo_to_monotonic():
     print("saved hvo_mono.mid")
 
 if __name__ == "__main__":
+    if not os.path.exists(TEST_DIR):
+        os.mkdir(TEST_DIR)
+    if not os.path.exists(OUT_DIR):
+        os.mkdir(OUT_DIR)
+
     test_pad_hvo_timesteps()
     test_midi_to_hvo()
     test_hvo_to_monotonic()

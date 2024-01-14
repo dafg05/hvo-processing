@@ -1,3 +1,3 @@
-notes_seq
+note_seq
 numpy
 mido

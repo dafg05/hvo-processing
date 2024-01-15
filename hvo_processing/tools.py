@@ -158,6 +158,18 @@ def hvo_seq_to_midi(hvo_sequence: hvo_seq.HVO_Sequence, output_path: str):
     io_helpers.save_note_sequence_to_midi(ns, output_path)
 
 
+def midi_to_monotonic_midi(midi_path: str, output_path: str):
+    """
+    Converts a MIDI file to a monotonic MIDI file.
+    """
+    # Convert the midi file to an HVOSequence
+    hvo_sequence = midi_to_hvo_seq(midi_path)
+    # flatten the HVOSequence
+    monotonic_array = hvo_sequence.flatten_voices()
+    # convert back to midi 
+    monotonic_sequence = array_to_hvo_seq(monotonic_array, tempo=hvo_sequence.tempos[0].qpm)
+    hvo_seq_to_midi(monotonic_sequence, output_path)
+
 # Helper functions ------------------------------------------------------------
 # -----------------------------------------------------------------------------
 

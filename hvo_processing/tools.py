@@ -13,7 +13,7 @@ FEATURES = 27
 # Pipeline functions ----------------------------------------------------------
 # -----------------------------------------------------------------------------
 
-def serialize_hvo_pairs(midi_dir, output_path):
+def serialize_hvo_pairs(midi_dir, output_path, debug):
     # hvo pairs consist of a monotonic groove sequence and a full-groove sequence in that order
     hvo_pairs = []
 
@@ -47,7 +47,8 @@ def serialize_hvo_pairs(midi_dir, output_path):
             except AssertionError as ae:
                 raise ae
             except Exception as e:
-                print(f"Error processing {midi_file}: {e}")
+                if debug:
+                    print(f"Error processing {midi_file}: {e}")
                 errors += 1
 
     # Serialize the HVO sequences to a file

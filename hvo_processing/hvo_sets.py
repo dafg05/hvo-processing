@@ -1,6 +1,7 @@
 import pickle
 import os
 import hvo_sequence
+import pandas as pd
 
 from hvo_sequence.hvo_seq import HVO_Sequence
 
@@ -30,12 +31,22 @@ class HVOSetRetriever():
             data_set = pickle.load(hvo_file)
             print(f"Loaded {len(data_set)} hvo_seqs from {data_dir}")
             return data_set
+        
+    @staticmethod
+    def __load_metadata__from_dir__(data_dir: str):
+        return pd.read_csv(f"{data_dir}/metadata.csv")
 
-    def get_train_set(self) -> List[HVO_Sequence]:
-        return HVOSetRetriever.__load_dataset_from_dir__(self.train_dir)
+    def get_trainset_and_metadata(self) -> tuple[List[HVO_Sequence], pd.DataFrame]:
+        train_set = HVOSetRetriever.__load_dataset_from_dir__(self.train_dir)
+        meta_data = HVOSetRetriever.__load_metadata__from_dir__(self.train_dir)
+        return train_set, meta_data
     
-    def get_test_set(self) -> List[HVO_Sequence]:
-        return HVOSetRetriever.__load_dataset_from_dir__(self.test_dir)
+    def get_testset_and_metadata(self) -> List[HVO_Sequence]:
+        test_set = HVOSetRetriever.__load_dataset_from_dir__(self.test_dir)
+        meta_data = HVOSetRetriever.__load_metadata__from_dir__(self.test_dir)
+        return test_set, meta_data
 
-    def get_validation_set(self) -> List[HVO_Sequence]:
-        return HVOSetRetriever.__load_dataset_from_dir__(self.validation_dir)
+    def get_validationset_and_metadata(self) -> List[HVO_Sequence]:
+        validation_set = HVOSetRetriever.__load_dataset_from_dir__(self.validation_dir)
+        meta_data = HVOSetRetriever.__load_metadata__from_dir__(self.validation_dir)
+        return validation_set, meta_data

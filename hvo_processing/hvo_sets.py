@@ -26,27 +26,46 @@ class HVOSetRetriever():
             raise FileNotFoundError(f"{self.train_dir} is not a directory!")
 
     @staticmethod
-    def __load_dataset_from_dir__(data_dir: str):
+    def __load_hvoset_from_dir__(data_dir: str):
         with open(f"{data_dir}/hvo_sequence_data.obj", "rb") as hvo_file:
             data_set = pickle.load(hvo_file)
             print(f"Loaded {len(data_set)} hvo_seqs from {data_dir}")
+            return data_set
+    
+    @staticmethod
+    def __load_midiset_from_dir__(data_dir: str):
+        with open(f"{data_dir}/midi_data.obj", "rb") as midi_file:
+            data_set = pickle.load(midi_file)
+            print(f"Loaded {len(data_set)} midi files from {data_dir}")
             return data_set
         
     @staticmethod
     def __load_metadata__from_dir__(data_dir: str):
         return pd.read_csv(f"{data_dir}/metadata.csv")
-
-    def get_trainset_and_metadata(self) -> tuple[List[HVO_Sequence], pd.DataFrame]:
-        train_set = HVOSetRetriever.__load_dataset_from_dir__(self.train_dir)
-        meta_data = HVOSetRetriever.__load_metadata__from_dir__(self.train_dir)
-        return train_set, meta_data
     
-    def get_testset_and_metadata(self) -> List[HVO_Sequence]:
-        test_set = HVOSetRetriever.__load_dataset_from_dir__(self.test_dir)
-        meta_data = HVOSetRetriever.__load_metadata__from_dir__(self.test_dir)
-        return test_set, meta_data
-
-    def get_validationset_and_metadata(self) -> List[HVO_Sequence]:
-        validation_set = HVOSetRetriever.__load_dataset_from_dir__(self.validation_dir)
-        meta_data = HVOSetRetriever.__load_metadata__from_dir__(self.validation_dir)
-        return validation_set, meta_data
+    def get_train_hvoset(self) -> List[HVO_Sequence]:
+        return HVOSetRetriever.__load_hvoset_from_dir__(self.train_dir)
+    
+    def get_train_metadata(self) -> pd.DataFrame:
+        return HVOSetRetriever.__load_metadata__from_dir__(self.train_dir)
+    
+    def get_train_midiset(self):
+        return HVOSetRetriever.__load_midiset_from_dir__(self.train_dir)
+    
+    def get_test_hvoset(self) -> List[HVO_Sequence]:
+        return HVOSetRetriever.__load_hvoset_from_dir__(self.test_dir)
+    
+    def get_test_metadata(self) -> pd.DataFrame:
+        return HVOSetRetriever.__load_metadata__from_dir__(self.test_dir)
+    
+    def get_test_midiset(self):
+        return HVOSetRetriever.__load_midiset_from_dir__(self.test_dir)
+    
+    def get_validation_hvoset(self) -> List[HVO_Sequence]:
+        return HVOSetRetriever.__load_hvoset_from_dir__(self.validation_dir)
+    
+    def get_validation_metadata(self) -> pd.DataFrame:
+        return HVOSetRetriever.__load_metadata__from_dir__(self.validation_dir)
+    
+    def get_validation_midiset(self):
+        return HVOSetRetriever.__load_midiset_from_dir__(self.validation_dir)
